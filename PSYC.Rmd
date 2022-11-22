@@ -1,0 +1,167 @@
+---
+title: "PSYC"
+author: "Chi Zhang"
+date: "07/09/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("psych")
+library(car)
+```
+
+# Read in the csv file
+```{r}
+Nego_data <- read.csv(file = "Data with Bio culture and Average Score.csv")
+Nego_data
+```
+
+# General significant test with linear model and stepwise selection
+```{r}
+Culture <- Nego_data$Bio_Culture
+Dignity <- Nego_data$Dignity
+Face <- Nego_data$Face
+
+# linear model and test significance of factors
+model <- lm(Culture ~ (Dignity + Face)^2)
+
+# Stepwise selection process and figure out the significant factor(s)
+# Only intercept and Dignity factor are significant in this model
+model <- step(model)
+```
+
+# Only dignity factor is significant
+```{r}
+# print out the summary table of the reduced model
+summary(model)
+```
+
+# Assumption test
+```{r}
+# Done the assumption test
+Culture <- as.factor(Culture)
+leveneTest(Dignity ~ Culture)
+leveneTest(Face ~ Culture)
+```
+
+# Descriptive data of face and dignity score for mono & bio culture
+```{r}
+# Record data into list for mean and SD descriptive data
+mono_face_culture <- c()
+mono_dig_culture <- c()
+bio_face_culture <- c()
+bio_dig_culture <- c()
+
+for (i in 1:length(Culture)){
+  if (Culture[i] == "1"){
+    mono_face_culture <- c(mono_face_culture, Face[i])
+    mono_dig_culture <- c(mono_dig_culture, Dignity[i])
+  } else{
+    bio_face_culture <- c(bio_face_culture, Face[i])
+    bio_dig_culture <- c(bio_dig_culture, Dignity[i])
+  }
+}
+```
+
+# SD values
+```{r}
+# SD value for mono-culture of in face score
+sd(mono_face_culture)
+
+# SD value for mono-culture of in dignity score
+sd(mono_dig_culture)
+
+# SD value for bio-culture of in face score
+sd(bio_face_culture)
+
+# SD value for bio-culture of in dignity score
+sd(bio_dig_culture)
+```
+
+# Mean values
+```{r}
+# Mean value for mono-culture of in face score
+mean(mono_face_culture)
+
+# Mean value for mono-culture of in dignity score
+mean(mono_dig_culture)
+
+# Mean value for bio-culture of in face score
+mean(bio_face_culture)
+
+# Mean value for bio-culture of in dignity score
+mean(bio_dig_culture)
+```
+
+# (Ignore this block if not needed)
+```{r}
+info_ave <- Nego_data$Info_AVE
+emo_ave <- Nego_data$Emotion_AVE
+
+bio_info_ave <- c()
+bio_emo_ave <- c()
+mono_info_ave <- c()
+mono_emo_ave <- c()
+
+for (i in 1:length(Culture)){
+  if (Culture[i] == "1"){
+    mono_info_ave <- c(mono_info_ave, info_ave[i])
+    mono_emo_ave <- c(mono_emo_ave, emo_ave[i])
+  } else{
+    bio_info_ave <- c(bio_info_ave, info_ave[i])
+    bio_emo_ave <- c(bio_emo_ave, emo_ave[i])
+  }
+}
+
+# Drop NA value from list
+mono_emo_ave <- mono_emo_ave[-c(49, 50, 52)]
+mono_info_ave <- mono_info_ave[-c(49, 50, 52)]
+```
+
+# One-way ANOVA test on informational value for 2 mono & bio groups
+# One-way ANOVA test on emotional value for 2 mono & bio groups
+```{r}
+# one-way ANOVA info
+one_way_info <- aov(info_ave ~ Culture)
+summary(one_way_face)
+
+# one-way ANOVA emo
+one_way_emo <- aov(emo_ave ~ Culture)
+summary(one_way_dig)
+```
+
+# Some hist plots for participants's age and gender distribution
+```{r}
+dignity <- c()
+bio <- c()
+info_dignity <- c()
+info_bio <- c()
+emo_dignity <- c()
+emo_bio <- c()
+
+par(mfrow = c(1, 2))
+for (i in 1:length(Nego_data$ResponseId)){
+  if (Nego_data$Bio_Culture[i] < 2){
+    dignity <- c(dignity, Nego_data$Age[i])
+    info_dignity <- c(info_dignity, Nego_data$Info_AVE[i])
+    emo_dignity <- c(emo_dignity, Nego_data$Emotion_AVE[i])
+  }
+  else{
+    bio <- c(bio, Nego_data$Age[i])
+    info_bio <- c(info_bio, Nego_data$Info_AVE[i])
+    emo_bio <- c(emo_bio, Nego_data$Emotion_AVE[i])
+  }
+}
+
+hist(dignity)
+hist(bio)
+hist(info_dignity)
+hist(info_bio)
+hist(emo_dignity)
+hist(emo_bio)
+hist(Nego_data$Gender)
+```
